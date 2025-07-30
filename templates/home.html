@@ -12,7 +12,7 @@
     />
   </head>
   <body>
-    <div class="header">
+    <div class="header fixed-top">
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
           <a class="navbar-brand h1" href="#">Todo</a>
@@ -31,23 +31,88 @@
       </nav>
     </div>
 
-    <img
-      src="../image.png"
-      alt="background"
-      class="w-100"
-    />
+    <div>
+      <img
+        src="https://backgroundabstract.com/wp-content/uploads/edd/2021/09/andromeda-galaxy-way-ik-e1656161540628.jpg"
+        alt="background"
+        class="position-fixed top-0 start-0 w-100 h-100 object-fit-cover"
+        style="z-index: -1; opacity: 0.9"
+      />
+    </div>
 
-    <div class="d-flex justify-content-center mt-5">
-      <form action="POST">
-        <div class="input-group input-group-lg m-2">
-          <span class="input-group-text">Title</span>
-          <input type="text" class="form-control" />
+    <div
+      class="container mt-5 d-flex flex-column justify-content-center align-items-center"
+    >
+      <h1 class="mt-4 text-white font-monospace">
+        A productive day is built one task at a time.
+      </h1>
+      <h1 class="mb-4 text-white font-monospace">Start Now.</h1>
+      <form
+        action="/"
+        method="POST"
+        class="bg-dark text-light p-4 rounded shadow"
+        style="min-width: 350px; max-width: 50%; width: 100%"
+      >
+        <h2 class="mb-4 text-center">Add Todo</h2>
+        <div class="mb-3">
+          <label for="title" class="form-label">Title</label>
+          <input
+            type="text"
+            class="form-control bg-secondary text-light border-0"
+            id="title"
+            name="title"
+            placeholder="Enter todo title"
+            required
+          />
         </div>
-        <div class="input-group input-group-sm m-2">
-          <span class="input-group-text">Description</span>
-          <input type="text" class="form-control" />
+        <div class="mb-3">
+          <label for="description" class="form-label">Description</label>
+          <textarea
+            class="form-control bg-secondary text-light border-0"
+            id="description"
+            name="description"
+            rows="3"
+            placeholder="Enter description"
+            required
+          ></textarea>
         </div>
+        <button type="submit" class="btn btn-primary w-100">Add Todo</button>
       </form>
+    </div>
+
+    <div class="container mt-5 mb-5">
+      <div class="table-responsive">
+        <table
+          class="table table-dark table-hover table-bordered align-middle shadow rounded"
+        >
+          <thead class="table-secondary">
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Title</th>
+              <th scope="col">Description</th>
+              <th scope="col">Date Created</th>
+              <th scope="col" class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Example row, replace with dynamic content -->
+            {% for todo in todos %}
+            <tr>
+              <td>{{loop.index}}</td>
+              <td>{{todo['title']}}</td>
+              <td>{{todo['description']}}</td>
+              <td>{{todo['date_created']}}</td>
+              <td class="text-center">
+                <button class="btn btn-success btn-sm me-2">Complete</button>
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </td>
+            </tr>
+            {% endfor %}
+
+            <!-- More rows go here -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <script
