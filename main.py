@@ -40,6 +40,12 @@ def handle_submit():
           db.session.rollback()
           return f"An error occurred: {str(e)}", 500
 
+@app.route('/delete/<int:id>')
+def handle_delete(id):
+     todo = Todo.query.get(id)
+     db.session.delete(todo)
+     db.session.commit()
+     return redirect('/')
 
 if __name__ == '__main__':
     with app.app_context():
