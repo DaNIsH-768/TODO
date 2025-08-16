@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_bcrypt import Bcrypt
 from verification import verify_username, verify_password
+from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user
 import secrets
 
 """
@@ -59,6 +60,9 @@ def authenticate_user(username, password):
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex()
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
 bcrypt = Bcrypt(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todos.db'  # All todos database
@@ -69,13 +73,21 @@ app.config['SQLALCHEMY_BINDS'] = {
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-class User(db.Model):
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
+
+class User(db.Model, UserMixin):
      id = db.Column(db.Integer, primary_key=True)
      username = db.Column(db.String(30), nullable=False)
      password_hash = db.Column(db.String(), nullable=False)
 
+     @staticmethod
+     def get(user_id):
+          return db.session.get(User, int(user_id))
+
      def __repr__(self):
-        return f"<ID {self.id} - username {self.username}>"
+          return f"<ID {self.id} - username {self.username}>"
 
 class Todo(db.Model):
     __tablename__ = 'todo'
@@ -99,13 +111,31 @@ class Completed(db.Model):
         return f"<Todo {self.id} - {self.title}>"
 
 @app.route('/')
+@login_required
 def hello():
      todos = Todo.query.all()
      completed = Completed.query.all()
      return render_template('home.html', todos=todos, completed=completed)
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+     if request.method == 'POST':
+          username = request.form['username']
+          password = request.form['password']
+
+          user = User.query.filter_by(username=username).first()
+          if not user:
+               flash('Invalid User.', 'error')
+          else:
+               password_correct = bcrypt.check_password_hash(user.password_hash, password)
+               if not password_correct:
+                    flash('Invalid Password.', 'error')
+               else:
+                    login_user(user)
+                    flash('Login Successfull.', 'success')
+                    return redirect('/')
+
+
      return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -136,6 +166,7 @@ def signup():
      return render_template('signup.html')
 
 @app.route('/', methods=['POST'])
+@login_required
 def handle_submit():
      try:
           title = request.form['title']
@@ -153,6 +184,7 @@ def handle_submit():
           return f"An error occurred: {str(e)}", 500
 
 @app.route('/complete/<int:id>')
+@login_required
 def handle_complete(id):
      todo = Todo.query.get(id)
      completed = Completed(title=todo.title, description = todo.description)
@@ -162,6 +194,7 @@ def handle_complete(id):
      return redirect('/')
 
 @app.route('/delete/<int:id>')
+@login_required
 def handle_delete(id):
      todo = Todo.query.get(id)
      db.session.delete(todo)
@@ -169,6 +202,7 @@ def handle_delete(id):
      return redirect('/')
 
 @app.route('/delete_comp/<int:id>')
+@login_required
 def handle_delete_comp(id):
      todo = Completed.query.get(id)
      db.session.delete(todo)
@@ -176,10 +210,18 @@ def handle_delete_comp(id):
      return redirect('/')
 
 @app.route('/clear_completed')
+@login_required
 def handle_clear_completed():
      todos = Completed.query.delete()
      db.session.commit()
      return redirect('/')
+
+@app.route('/logout')
+@login_required
+def handle_logout():
+     logout_user()
+     flash('Logout successfull.', 'success')
+     return redirect('/login')
 
 if __name__ == '__main__':
     with app.app_context():
