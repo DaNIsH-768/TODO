@@ -7,56 +7,65 @@ from flask_login import UserMixin, LoginManager, login_required, login_user, log
 import secrets
 
 """
-A simple Flask-based Todo application with SQLite database integration.
+A Flask-based Todo application with user authentication and SQLite database integration.
+
+Features:
+     - User registration and login with password hashing (bcrypt).
+     - User session management using Flask-Login.
+     - Add, complete, and delete todo items.
+     - Separate storage for active and completed todos.
+     - Flash messages for user feedback.
 
 Modules:
      - flask: Web framework for Python.
-     - flask_sqlalchemy: SQLAlchemy integration for Flask.
+     - flask_sqlalchemy: SQLAlchemy ORM integration for Flask.
+     - flask_bcrypt: Password hashing.
+     - flask_login: User session management.
      - datetime: For handling date and time.
+     - secrets: For generating secure secret keys.
 
-Classes:
+Database Models:
+     User(db.Model, UserMixin):
+          - id (int): Primary key.
+          - username (str): Unique username.
+          - password_hash (str): Hashed password.
+
      Todo(db.Model):
-          Represents an active Todo item.
-          Attributes:
-               id (int): Primary key.
-               title (str): Title of the todo item (required).
-               description (str): Description of the todo item (required).
-               date_created (date): Date when the todo was created (defaults to current date).
-          Methods:
-               __repr__: Returns a string representation of the Todo instance.
+          - id (int): Primary key.
+          - title (str): Title of the todo item (required).
+          - description (str): Description of the todo item (required).
+          - date_created (date): Date when the todo was created (defaults to current date).
 
      Completed(db.Model):
-          Represents a completed Todo item (stored in a separate database).
-          Attributes:
-               id (int): Primary key.
-               title (str): Title of the completed todo item (required).
-               description (str): Description of the completed todo item (required).
-               date_created (date): Date when the todo was created (defaults to current date).
-          Methods:
-               __repr__: Returns a string representation of the Completed instance.
+          - id (int): Primary key.
+          - title (str): Title of the completed todo item (required).
+          - description (str): Description of the completed todo item (required).
+          - date_created (date): Date when the todo was created (defaults to current date).
 
 Routes:
      '/' [GET]:
-          Renders the home page displaying all active and completed todo items.
+          - Display all active and completed todo items (login required).
      '/' [POST]:
-          Handles submission of new todo items via form.
-          Validates input and adds new item to the database.
+          - Add a new todo item (login required).
+     '/login' [GET, POST]:
+          - User login.
+     '/signup' [GET, POST]:
+          - User registration.
      '/complete/<int:id>' [GET]:
-          Marks a todo item as completed (moves it to the completed database).
+          - Mark a todo item as completed (login required).
      '/delete/<int:id>' [GET]:
-          Deletes the active todo item with the specified ID.
+          - Delete an active todo item (login required).
      '/delete_comp/<int:id>' [GET]:
-          Deletes the completed todo item with the specified ID.
+          - Delete a completed todo item (login required).
      '/clear_completed' [GET]:
-          Deletes all completed todo items.
+          - Delete all completed todo items (login required).
+     '/logout' [GET]:
+          - Log out the current user.
 
 Application Entry Point:
      - Creates database tables if they do not exist.
      - Runs the Flask development server in debug mode.
 """
-
-def authenticate_user(username, password):
-     ...
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex()
