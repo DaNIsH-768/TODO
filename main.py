@@ -285,6 +285,14 @@ def handle_logout():
     flash('Logout successfull.', 'success')
     return redirect('/login')
 
+@app.route('/health')
+def health_check():
+    """
+    Health check endpoint for deployment platforms and monitoring.
+    Returns 200 OK if the application is running.
+    """
+    return {'status': 'ok', 'message': 'Application is running'}, 200
+
 if __name__ == '__main__':
     # Create all tables for the app (users and todos)
     with app.app_context():

@@ -36,12 +36,18 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Run the application:
+4. (Optional) Configure environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your preferred settings
+```
+
+5. Run the application:
 ```bash
 python main.py
 ```
 
-5. Open your browser and navigate to `http://localhost:5000`
+6. Open your browser and navigate to `http://localhost:5000`
 
 ## Deployment
 
@@ -140,6 +146,12 @@ Usernames must:
 - Contain only letters, numbers, underscores, or dots
 - Start with a letter
 
+## API Endpoints
+
+The application includes a health check endpoint for monitoring:
+
+- `GET /health` - Returns application status (useful for deployment platforms)
+
 ## Project Structure
 
 ```
@@ -149,6 +161,8 @@ TODO/
 ├── requirements.txt     # Python dependencies
 ├── Procfile            # Process file for deployment
 ├── runtime.txt         # Python version specification
+├── render.yaml         # Render deployment configuration
+├── .env.example        # Example environment variables
 ├── templates/          # HTML templates
 │   ├── home.html       # Main todo interface
 │   ├── login.html      # Login page
