@@ -171,7 +171,7 @@ def login():
                 flash('Invalid Password.', 'error')
             else:
                 login_user(user)
-                flash('Login Successfull.', 'success')
+                flash('Login Successful.', 'success')
                 return redirect('/')
 
     return render_template('login.html')
@@ -282,7 +282,7 @@ def handle_logout():
     Logs out the current user and redirects to the login page.
     """
     logout_user()
-    flash('Logout successfull.', 'success')
+    flash('Logout successful.', 'success')
     return redirect('/login')
 
 @app.route('/health')
