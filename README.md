@@ -1,5 +1,9 @@
 # TODO Application
 
+![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
+![Flask](https://img.shields.io/badge/flask-3.0.0-green.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 A Flask-based Todo application with user authentication and task management features.
 
 ## Features
@@ -52,6 +56,10 @@ python main.py
 ## Deployment
 
 This application is configured for easy deployment to various platforms.
+
+📘 **[See detailed deployment guide](DEPLOYMENT.md)** for step-by-step instructions.
+
+### Quick Deploy Options
 
 ### Deploy to Render
 
