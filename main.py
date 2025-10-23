@@ -6,6 +6,7 @@ from flask_bcrypt import Bcrypt
 from verification import verify_username, verify_password
 from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user, current_user
 import secrets
+import os
 
 """
 A Flask-based Todo application with user authentication and SQLite database integration.
@@ -64,7 +65,8 @@ Application Entry Point:
 
 # Flask app and extension setup
 app = Flask(__name__)
-app.secret_key = secrets.token_hex()  # Secure random secret key for session management
+# Use environment variable for secret key in production, generate random key for development
+app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex())
 
 # Flask-Login setup
 login_manager = LoginManager()
@@ -75,9 +77,12 @@ login_manager.login_view = "login"
 bcrypt = Bcrypt(app)
 
 # SQLAlchemy database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todos.db'  # Default (todos) database
+# Use persistent database path for production
+db_dir = os.environ.get('DATABASE_PATH', os.path.join(os.path.dirname(__file__), 'instance'))
+os.makedirs(db_dir, exist_ok=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(db_dir, "todos.db")}'
 app.config['SQLALCHEMY_BINDS'] = {
-    'users': 'sqlite:///users_db.db'   # Separate users database (not used for FK)
+    'users': f'sqlite:///{os.path.join(db_dir, "users_db.db")}'   # Separate users database (not used for FK)
 }
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -123,7 +128,7 @@ class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    date_created = db.Column(db.Date, default=datetime.utcnow().date)
+    date_created = db.Column(db.Date, default=lambda: datetime.now().date())
     is_completed = db.Column(db.Boolean, default=False)
 
     # Foreign key to User table
@@ -166,7 +171,7 @@ def login():
                 flash('Invalid Password.', 'error')
             else:
                 login_user(user)
-                flash('Login Successfull.', 'success')
+                flash('Login Successful.', 'success')
                 return redirect('/')
 
     return render_template('login.html')
@@ -277,12 +282,22 @@ def handle_logout():
     Logs out the current user and redirects to the login page.
     """
     logout_user()
-    flash('Logout successfull.', 'success')
+    flash('Logout successful.', 'success')
     return redirect('/login')
+
+@app.route('/health')
+def health_check():
+    """
+    Health check endpoint for deployment platforms and monitoring.
+    Returns 200 OK if the application is running.
+    """
+    return {'status': 'ok', 'message': 'Application is running'}, 200
 
 if __name__ == '__main__':
     # Create all tables for the app (users and todos)
     with app.app_context():
         db.create_all(bind_key='users')  # Create users table if using bind
         db.create_all()                  # Create all other tables
-    app.run(debug=True)
+    # Use debug mode only in development
+    debug_mode = os.environ.get('FLASK_ENV') == 'development'
+    app.run(debug=debug_mode, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
